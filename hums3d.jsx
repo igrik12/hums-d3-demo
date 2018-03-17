@@ -26,7 +26,9 @@ export default class Hums3d extends Component {
         var that = this;
         var svg = d3.select("svg"),
             width = +svg.attr("width"),
-            height = +svg.attr("height");
+            height = +svg.attr("height"),
+            transform = d3.zoomIdentity;
+
 
         var color = d3.scaleOrdinal(d3.schemeCategory20);
 
@@ -43,27 +45,24 @@ export default class Hums3d extends Component {
             .enter().append("line")
             .attr("stroke-width", function (d) { return Math.sqrt(d.value); });
 
+
         var node = svg.append("g")
             .attr("class", "nodes")
             .selectAll("circle")
             .data(data.nodes)
             .enter().append("circle")
+            .attr("cx", function (d) { return d.x; })
+            .attr("cy", function (d) { return d.y; })
             .attr("r", 5)
             .attr("fill", function (d) { return color(d.group); })
             .call(d3.drag()
                 .on("start", dragstarted)
                 .on("drag", dragged)
                 .on("end", dragended))
-            .on("click", handleMouseOver)
+            .on("click", handleMouseClick)
 
         node.append("title")
             .text(function (d) { return d.id; });
-
-        function handleMouseOver(d) {
-            that.setState({
-                nodeSelected: d
-            })
-        }
 
         simulation
             .nodes(data.nodes)
@@ -84,38 +83,54 @@ export default class Hums3d extends Component {
                 .attr("cy", function (d) { return d.y; });
         }
 
+        // ZOOM ZOOM
+        svg.call(d3.zoom()
+            .scaleExtent([1 / 2, 8])
+            .on("zoom", zoomed));
 
-        function dragstarted(d) {
-            if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-            d.fx = d.x;
-            d.fy = d.y;
-        }
-
-        function dragged(d) {
-            d.fx = d3.event.x;
-            d.fy = d3.event.y;
-        }
-
-        function dragended(d) {
-            if (!d3.event.active) simulation.alphaTarget(0);
-            d.fx = null;
-            d.fy = null;
-        }
-
-        //ZOOM ZOOM
-        var zoom_handler = d3.zoom()
-            .on("zoom", zoom_actions);
-
-
-        //specify what to do when zoom event listener is triggered 
-        function zoom_actions() {
+        function zoomed() {
             node.attr("transform", d3.event.transform);
             link.attr("transform", d3.event.transform);
         }
 
-        //add zoom behaviour to the svg element backing our graph.  
-        //same thing as svg.call(zoom_handler); 
-        zoom_handler(svg);
+
+        var start_x, start_y;
+        var current_scale_string;
+        var current_scale;
+
+        function dragstarted(d) {
+            if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+            start_x = +d3.event.x;
+            start_y = +d3.event.y;
+        }
+
+        function dragged(d) {
+            if (this.getAttribute("transform") === null) {
+                current_scale = 1;
+            }
+            //case where we have transformed the circle 
+            else {
+                current_scale_string = this.getAttribute("transform").split(' ')[1];
+                current_scale = +current_scale_string.substring(6, current_scale_string.length - 1);
+            }
+            d3.select(this)
+                .attr("cx", d.fx = start_x + ((d3.event.x - start_x) / current_scale))
+                .attr("cy", d.fy = start_y + ((d3.event.y - start_y) / current_scale));
+        }
+
+        function dragended(d) {
+            if (!d3.event.active) simulation.alphaTarget(0);
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+
+        function handleMouseClick(d) {
+            that.setState({
+                nodeSelected: d
+            })
+        }
+
 
         this.setState({
             nodes: svg
@@ -128,7 +143,7 @@ export default class Hums3d extends Component {
         return (
             <div className='container'>
                 <HumsHeader />
-                <Radio toggle onClick={this.toggleVisibility}/>
+                <Radio toggle onClick={this.toggleVisibility} />
                 <Sidebar.Pushable as={Segment}>
                     <Sidebar
                         as={Menu}
@@ -151,7 +166,7 @@ export default class Hums3d extends Component {
                             <Grid columns={2} divided>
                                 <Grid.Row>
                                     <Grid.Column width={11}>
-                                        <svg width="1323" height="600" background="teal" className='chart'>
+                                        <svg width="1323" height="600" className='chart'>
                                         </svg>
                                     </Grid.Column>
                                     <Grid.Column width={3}>
