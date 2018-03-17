@@ -1,0 +1,19 @@
+body {
+    font-family: sans-serif;
+  }
+  
+  .links line {
+    stroke: grey;
+  }
+  
+  .flag {
+    background: blue;
+    background-color: #000;
+    position: absolute;
+  }
+  
+  .tooltip {
+    position: absolute;
+    background-color: lightgrey;
+    padding: 10px;
+  }
