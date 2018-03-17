@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import './hums-style.css';
 import HumsHeader from './HumsHeader.jsx';
-import { Sidebar, Segment, Button, Menu, Image, Icon, Header } from 'semantic-ui-react';
+import { Sidebar, Segment, Radio, Menu, Image, Icon, Header, Grid } from 'semantic-ui-react';
 
 export default class Hums3d extends Component {
 
@@ -128,7 +128,7 @@ export default class Hums3d extends Component {
         return (
             <div className='container'>
                 <HumsHeader />
-                <Button primary onClick={this.toggleVisibility}>Open Node Info Bar</Button>
+                <Radio toggle onClick={this.toggleVisibility}/>
                 <Sidebar.Pushable as={Segment}>
                     <Sidebar
                         as={Menu}
@@ -148,8 +148,17 @@ export default class Hums3d extends Component {
                     </Sidebar>
                     <Sidebar.Pusher>
                         <div className='chartContainer'>
-                            <svg width="1280" height="720" className='chart'>
-                            </svg>
+                            <Grid columns={2} divided>
+                                <Grid.Row>
+                                    <Grid.Column width={11}>
+                                        <svg width="1323" height="600" background="teal" className='chart'>
+                                        </svg>
+                                    </Grid.Column>
+                                    <Grid.Column width={3}>
+                                        <h2>Extra stuff...</h2>
+                                    </Grid.Column>
+                                </Grid.Row>
+                            </Grid>
                         </div>
                     </Sidebar.Pusher>
                 </Sidebar.Pushable>
